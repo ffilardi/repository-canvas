@@ -1,0 +1,10 @@
+{
+  "parameters": {
+    "containerAppName": {
+      "value": "orders-dev"
+    },
+    "resourceGroupName": {
+      "value": "orders-rg-dev"
+    }
+  }
+}

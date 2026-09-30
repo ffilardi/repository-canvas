@@ -1,0 +1,105 @@
+name: Refresh Repository Architecture
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - master
+  paths:
+    exclude:
+      - documentation/**
+
+pr: none
+
+pool:
+  vmImage: "ubuntu-latest"
+
+steps:
+  - checkout: self
+    clean: true
+    persistCredentials: true
+
+  - task: NodeTool@0
+    displayName: "Install Node.js"
+    inputs:
+      versionSpec: "22.x"
+
+  - task: Bash@3
+    displayName: "Check and refresh architecture"
+    inputs:
+      targetType: inline
+      script: |
+        set -euo pipefail
+
+        if bash documentation/repository-architecture/refresh.sh --check; then
+          echo "Architecture snapshot is already current."
+          echo "##vso[task.setvariable variable=architectureChanged]false"
+          exit 0
+        fi
+
+        bash documentation/repository-architecture/refresh.sh
+
+        if git diff --quiet -- documentation/repository-architecture/index.html; then
+          echo "No generated changes were found."
+          echo "##vso[task.setvariable variable=architectureChanged]false"
+        else
+          echo "##vso[task.setvariable variable=architectureChanged]true"
+        fi
+
+  - task: Bash@3
+    displayName: "Commit refreshed architecture"
+    condition: and(succeeded(), eq(variables['architectureChanged'], 'true'))
+    inputs:
+      targetType: inline
+      script: |
+        set -euo pipefail
+
+        branch="automation/repository-architecture-$(Build.BuildId)"
+
+        git config user.name "Azure Pipelines"
+        git config user.email "azure-pipelines@local"
+        git checkout -b "${branch}"
+
+        git add documentation/repository-architecture/index.html
+        git commit -m "Refresh repository architecture"
+        git push origin "HEAD:refs/heads/${branch}"
+
+        echo "##vso[task.setvariable variable=architectureBranch]${branch}"
+
+  - task: Bash@3
+    displayName: "Create architecture refresh PR"
+    condition: and(succeeded(), eq(variables['architectureChanged'], 'true'))
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      SYSTEM_COLLECTIONURI: $(System.CollectionUri)
+      SYSTEM_TEAMPROJECTID: $(System.TeamProjectId)
+      BUILD_REPOSITORY_ID: $(Build.Repository.ID)
+      ARCHITECTURE_BRANCH: $(architectureBranch)
+    inputs:
+      targetType: inline
+      script: |
+        set -euo pipefail
+
+        api_url="${SYSTEM_COLLECTIONURI}${SYSTEM_TEAMPROJECTID}/_apis/git/repositories/${BUILD_REPOSITORY_ID}/pullrequests?api-version=7.1"
+
+        payload=$(jq -n \
+          --arg source "refs/heads/${ARCHITECTURE_BRANCH}" \
+          --arg target "refs/heads/master" \
+          '{
+            sourceRefName: $source,
+            targetRefName: $target,
+            title: "Refresh repository architecture",
+            description: "Automatically regenerates the repository architecture snapshot."
+          }')
+
+        response=$(curl \
+          --fail-with-body \
+          --silent \
+          --show-error \
+          --request POST \
+          --header "Authorization: Bearer ${SYSTEM_ACCESSTOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "${payload}" \
+          "${api_url}")
+
+        echo "${response}" | jq '{pullRequestId, title, status}'

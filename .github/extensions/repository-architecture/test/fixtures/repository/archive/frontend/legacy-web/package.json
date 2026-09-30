@@ -1,0 +1,8 @@
+{
+  "name": "legacy-web",
+  "version": "0.1.0",
+  "description": "Archived fixture frontend",
+  "dependencies": {
+    "react": "1.0.0"
+  }
+}

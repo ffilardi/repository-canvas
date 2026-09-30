@@ -1,0 +1,72 @@
+name: Refresh Repository Architecture
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - documentation/**
+
+jobs:
+  refresh-architecture:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check and refresh architecture
+        id: check
+        run: |
+          set -euo pipefail
+
+          if bash documentation/repository-architecture/refresh.sh --check; then
+            echo "Architecture snapshot is already current."
+            echo "architectureChanged=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          bash documentation/repository-architecture/refresh.sh
+
+          if git diff --quiet -- documentation/repository-architecture/index.html; then
+            echo "No generated changes were found."
+            echo "architectureChanged=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "architectureChanged=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit refreshed architecture
+        if: steps.check.outputs.architectureChanged == 'true'
+        run: |
+          set -euo pipefail
+
+          branch="automation/repository-architecture-${{ github.run_id }}-${{ github.run_attempt }}"
+
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions@local"
+          git checkout -b "${branch}"
+
+          git add documentation/repository-architecture/index.html
+          git commit -m "Refresh repository architecture"
+          git push origin "HEAD:refs/heads/${branch}"
+
+      - name: Create architecture refresh PR
+        if: steps.check.outputs.architectureChanged == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARCHITECTURE_BRANCH: automation/repository-architecture-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          gh pr create \
+            --base master \
+            --head "${ARCHITECTURE_BRANCH}" \
+            --title "Refresh repository architecture" \
+            --body "Automatically regenerates the repository architecture snapshot."

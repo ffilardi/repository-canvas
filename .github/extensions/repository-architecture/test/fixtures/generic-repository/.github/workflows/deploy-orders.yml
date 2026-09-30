@@ -1,0 +1,6 @@
+name: Deploy orders
+
+steps:
+  - script: echo backend/orders
+    displayName: Deploy
+    arguments: --resource-group orders-rg-dev

@@ -1,0 +1,11 @@
+trigger:
+  paths:
+    include:
+      - backend/sample-api/*
+
+steps:
+  - script: |
+      echo backend/sample-api
+      az deployment group create --resource-group fixture-rg-dev
+      az deployment group create --resource-group fixture-rg-uat
+      az deployment group create --resource-group fixture-rg-prod

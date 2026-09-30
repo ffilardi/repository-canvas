@@ -1,0 +1,17 @@
+on:
+  push:
+    paths:
+      - backend/sample-api/*
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        environment: [dev, uat, prod]
+
+    steps:
+      - name: Deploy to ${{ matrix.environment }}
+        run: |
+          az deployment group create --resource-group "fixture-rg-${{ matrix.environment }}"

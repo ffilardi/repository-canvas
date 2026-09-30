@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "uat"
+    },
+    "domain": {
+      "value": "di"
+    },
+    "containerAppEnvironmentName": {
+      "value": "fixture-container-environment-uat"
+    },
+    "appInsightsName": {
+      "value": "fixture-app-insights-uat"
+    },
+    "keyVaultName": {
+      "value": "fixture-key-vault-uat"
+    },
+    "serviceBusName": {
+      "value": "fixture-service-bus-uat"
+    },
+    "vendorApiUrl": {
+      "value": "https://vendor-uat.example.com/api"
+    }
+  }
+}

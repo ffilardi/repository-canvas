@@ -1,0 +1,14 @@
+{
+  "name": "sample-api",
+  "version": "2.0.0",
+  "description": "Fixture sample GraphQL API",
+  "dependencies": {
+    "@apollo/server": "1.0.0",
+    "@azure/app-configuration": "1.0.0",
+    "graphql": "1.0.0",
+    "mongodb": "1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "1.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "patient-web",
+  "version": "1.0.0",
+  "description": "Fixture patient frontend </script> <safe> & Unicode ✓",
+  "dependencies": {
+    "@apollo/client": "1.0.0",
+    "graphql": "1.0.0",
+    "react": "1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "1.0.0"
+  }
+}

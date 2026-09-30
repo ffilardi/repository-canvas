@@ -1,0 +1,7 @@
+services:
+  sample-api:
+    image: sample-api
+    depends_on:
+      - redis
+  redis:
+    image: redis

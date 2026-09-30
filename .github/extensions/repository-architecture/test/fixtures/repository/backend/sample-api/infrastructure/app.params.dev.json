@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "dev"
+    },
+    "domain": {
+      "value": "di"
+    },
+    "containerAppEnvironmentName": {
+      "value": "fixture-container-environment-dev"
+    },
+    "appInsightsName": {
+      "value": "fixture-app-insights-dev"
+    },
+    "keyVaultName": {
+      "value": "fixture-key-vault-dev"
+    },
+    "serviceBusName": {
+      "value": "fixture-service-bus-dev"
+    },
+    "vendorApiUrl": {
+      "value": "https://vendor-dev.example.com/api"
+    }
+  }
+}
